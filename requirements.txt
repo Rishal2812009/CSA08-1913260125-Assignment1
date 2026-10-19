@@ -6,7 +6,6 @@
 - **Register Number:** 1913260125  
 - **Branch:** B.Tech EEE  
 - **Course Code:** CSA08  
-- **Assignment Title:** Design, Implement and Validate a Payment Calculator for a Village Milk Co-operative  
 - **Python Version:** Python 3.x  
 
 ## Assignment Objective
@@ -34,4 +33,9 @@ CSA08-1913260125-Assignment1/
 ├── Task10/
 ├── Task11/
 └── Task12/
+# No external packages required. Using Python 3.13 Standard Library.
+decimal==built-in
+math==built-in
+sys==built-in
+time==built-in
 
