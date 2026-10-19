@@ -1,0 +1,364 @@
+TASK 1 – Understand the Problem and Identify the Data
+
+Student Name: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course Code: CSA08
+Assignment: Design, Implement and Validate a Payment Calculator for a Village Milk Co-operative
+
+------------------------------------------------------------
+1. PROBLEM SUMMARY
+------------------------------------------------------------
+
+The Ksheera Village Milk Producers’ Co-operative collects milk twice a day from about 300 farmers.
+For each farmer, the clerk records:
+
+- farmer ID
+- quantity of milk in litres
+- fat percentage
+- SNF percentage
+- shift
+
+The payment depends on a base rate and step adjustments for fat and SNF.
+
+Base rate:
+- Rs 30.00 per litre for milk with 3.5% fat and 8.5% SNF
+
+Adjustments:
+- Every 0.1% fat above or below 3.5% adds or subtracts Rs 0.40
+- Every 0.1% SNF above or below 8.5% adds or subtracts Rs 0.30
+
+Farmers are paid every ten days.
+
+The calculator must produce correct payments to the paisa and must be scalable from:
+- 1 centre: 300 farmers
+- 1 block: 6,000 farmers
+- 1 district union: 150,000 farmers
+
+------------------------------------------------------------
+2. INPUTS
+------------------------------------------------------------
+
+1. farmer_id
+   Type: str
+   Reason: Farmer ID is an identifier, not a mathematical number.
+   It may contain leading zeros, so it should be stored as text.
+
+2. litres
+   Type: Decimal or float, but Decimal is preferred for money-related calculations
+   Reason: Milk quantity can be fractional, for example 8.5 litres.
+
+3. fat_pct
+   Type: Decimal or float, but Decimal is preferred
+   Reason: Fat percentage can be fractional, for example 4.2%.
+
+4. snf_pct
+   Type: Decimal or float, but Decimal is preferred
+   Reason: SNF percentage can be fractional, for example 8.7%.
+
+5. shift
+   Type: str
+   Reason: Shift is a category such as "Morning" or "Evening".
+   It is text, not a number.
+
+------------------------------------------------------------
+3. OUTPUTS
+------------------------------------------------------------
+
+1. rate_per_litre
+   Type: Decimal
+   Reason: This is a money value and must be exact to the paisa.
+
+2. amount
+   Type: Decimal
+   Reason: This is the payment for one milk entry.
+   It must be exact and should not contain floating-point errors.
+
+3. ten_day_total
+   Type: Decimal
+   Reason: This is the total payment for a farmer over ten days.
+   It must match the bank statement exactly.
+
+------------------------------------------------------------
+4. NAMED CONSTANTS
+------------------------------------------------------------
+
+The following values never change during one execution of the program.
+Therefore, they should be written as named constants.
+
+BASE_RATE = 30.00
+BASE_FAT = 3.5
+BASE_SNF = 8.5
+
+FAT_STEP_VALUE = 0.40
+SNF_STEP_VALUE = 0.30
+
+FAT_STEP_SIZE = 0.1
+SNF_STEP_SIZE = 0.1
+
+MIN_FAT = 2.0
+MAX_FAT = 7.0
+
+VALID_SHIFTS = ("Morning", "Evening")
+
+Justification:
+
+- BASE_RATE, BASE_FAT, BASE_SNF, FAT_STEP_VALUE and SNF_STEP_VALUE are rate card values.
+  They should be stored in one place so that a rate revision can be done easily.
+
+- FAT_STEP_SIZE and SNF_STEP_SIZE define the step interval of 0.1%.
+
+- MIN_FAT and MAX_FAT define the valid fat range.
+
+- VALID_SHIFTS defines the allowed shift values.
+
+------------------------------------------------------------
+5. WHOLE NUMBERS, FRACTIONAL VALUES AND TEXT
+------------------------------------------------------------
+
+TEXT VALUES:
+- farmer_id
+- shift
+
+FRACTIONAL VALUES:
+- litres
+- fat_pct
+- snf_pct
+- rate_per_litre
+- amount
+- ten_day_total
+
+WHOLE NUMBERS:
+- number of fat steps
+- number of SNF steps
+- number of entries
+- number of days
+- number of farmers
+
+Explanation:
+
+Even though money contains decimal places, it should not be treated as a normal float.
+For money, Decimal or integer paise is safer because float values can produce small errors.
+
+Example:
+
+0.1 + 0.2 == 0.3 gives False in Python when using float.
+
+For bank payments, such errors are not acceptable.
+
+------------------------------------------------------------
+6. RULES EVERY CORRECT PAYMENT MUST SATISFY
+------------------------------------------------------------
+
+Rule 1: Litres must be greater than zero.
+
+Reason:
+A farmer cannot supply negative or zero milk for a valid payment entry.
+
+Condition:
+
+litres > 0
+
+
+Rule 2: Fat percentage must be between 2.0% and 7.0%, inclusive.
+
+Reason:
+The problem states that fat outside this range should not be accepted.
+
+Condition:
+
+2.0 <= fat_pct <= 7.0
+
+
+Rule 3: SNF percentage must be greater than zero.
+
+Reason:
+SNF is a percentage of milk solids and must be positive for valid milk.
+
+Condition:
+
+snf_pct > 0
+
+
+Rule 4: Rate card constants must not change during one program run.
+
+Reason:
+If rate values are changed in the middle of a calculation, payments will become inconsistent.
+
+
+Rule 5: Final payment must be correct to the paisa.
+
+Reason:
+The old calculator gives totals that differ from the bank statement by a few paise.
+Therefore, the new calculator must avoid float errors.
+
+
+Rule 6: Rounding must be controlled.
+
+Reason:
+Money should be rounded to two decimal places.
+For accuracy, Decimal is preferred over float.
+
+
+Rule 7: Step calculation must use rounding carefully.
+
+Reason:
+Expressions such as:
+
+(4.2 - 3.5) / 0.1
+
+can produce:
+
+7.000000000000001
+
+Therefore, the number of steps should be calculated using round() to get the correct whole step count.
+
+
+Rule 8: Shift should be valid.
+
+Reason:
+The entry should belong to a known shift such as Morning or Evening.
+
+Condition:
+
+shift in VALID_SHIFTS
+
+------------------------------------------------------------
+7. ASSUMPTIONS
+------------------------------------------------------------
+
+1. The clerk enters decimal values using a dot, not a comma.
+   Example: 8.5 is valid, but 8,5 is invalid.
+
+2. Farmer ID is unique for each farmer.
+
+3. The shift is either Morning or Evening.
+
+4. The rate card remains constant during one execution of the program.
+
+5. Payments are calculated for ten days at a time.
+
+6. The final amount is rounded to two decimal places because Indian currency uses rupees and paise.
+
+7. The system should initially handle around 300 farmers, but it must be designed to scale to 6,000 and 150,000 farmers.
+
+8. The original milk analyser or clerk entry gives fat and SNF values that can be represented as fractional decimal values.
+
+------------------------------------------------------------
+8. ALTERNATIVE CONCEPT AND COMPLEXITY ANALYSIS
+------------------------------------------------------------
+
+Alternative design:
+Instead of storing each farmer entry as one tuple or dictionary, we could store each value in separate variables.
+
+Example:
+
+litres1 = 10.0
+fat1 = 3.5
+snf1 = 8.5
+
+litres2 = 8.5
+fat2 = 4.2
+snf2 = 8.7
+
+litres3 = 12.0
+fat3 = 3.1
+snf3 = 8.3
+
+For 300 farmers, this would require:
+
+300 litres variables
+300 fat variables
+300 SNF variables
+
+That means at least 900 separate variables.
+
+If shift and farmer ID are also stored separately, the number of variables becomes even larger.
+
+------------------------------------------------------------
+9. PROBLEMS WITH SEPARATE VARIABLES
+------------------------------------------------------------
+
+1. The code becomes extremely long.
+
+2. Adding more farmers requires changing the program structure.
+
+3. It is difficult to calculate ten-day totals.
+
+4. It is difficult to validate all entries.
+
+5. It is difficult to test the program.
+
+6. It does not scale to 6,000 or 150,000 farmers.
+
+7. A simple for loop cannot process the entries unless dynamic variable names or dangerous techniques are used.
+
+------------------------------------------------------------
+10. BETTER DESIGN
+------------------------------------------------------------
+
+Use a list of tuples or dictionaries.
+
+Example using tuples:
+
+entries = [
+    ("F001", 10.0, 3.5, 8.5, "Morning"),
+    ("F002", 8.5, 4.2, 8.7, "Morning"),
+    ("F003", 12.0, 3.1, 8.3, "Morning")
+]
+
+Processing using a loop:
+
+for farmer_id, litres, fat, snf, shift in entries:
+    # validate entry
+    # calculate rate
+    # calculate amount
+    # add to total
+
+This design is clean, maintainable and scalable.
+
+------------------------------------------------------------
+11. COMPLEXITY COMPARISON
+------------------------------------------------------------
+
+Design 1: Separate variables
+
+Time complexity:
+O(n), because n entries still have to be processed.
+
+Space complexity:
+O(n), because n entries require many separate variables.
+
+However, the real problem is maintainability.
+For 300 farmers, 900 or more variables are needed.
+For 150,000 farmers, this design is impossible to manage.
+
+
+Design 2: List or tuple per entry
+
+Time complexity:
+O(n), because each entry is processed once.
+
+Space complexity:
+O(n), because n entries are stored.
+
+This design scales properly because the same loop can process 300, 6,000 or 150,000 entries without changing the structure of the program.
+
+------------------------------------------------------------
+12. FINAL CONCLUSION FOR TASK 1
+------------------------------------------------------------
+
+The program must store:
+
+- text values such as farmer_id and shift,
+- fractional values such as litres, fat percentage and SNF percentage,
+- money values such as rate, amount and ten-day total,
+- whole-number values such as step counts and number of entries.
+
+The rate card values should be named constants.
+
+Money values should be handled carefully using Decimal or integer paise to avoid floating-point errors.
+
+The best data structure is a list of tuples or dictionaries, not separate variables.
+
+This design satisfies the payment rules and scales from one centre to district-union level.
