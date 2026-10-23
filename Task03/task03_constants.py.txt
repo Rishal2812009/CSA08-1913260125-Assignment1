@@ -1,0 +1,94 @@
+"""Task 3 - Variables and Named Constants.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+# ---------------------------------------------------------
+# RATE CARD - single source of truth
+# UPPER_CASE means: do not change these during a run.
+# A rate revision is made HERE and nowhere else.
+# ---------------------------------------------------------
+BASE_RATE = 30.00        # Rs per litre at 3.5% fat and 8.5% SNF
+BASE_FAT = 3.5           # reference fat percentage
+BASE_SNF = 8.5           # reference SNF percentage
+
+FAT_STEP_SIZE = 0.1      # percentage points per fat step
+SNF_STEP_SIZE = 0.1      # percentage points per SNF step
+
+FAT_STEP_VALUE = 0.40    # Rs per litre per fat step
+SNF_STEP_VALUE = 0.30    # Rs per litre per SNF step
+
+MIN_FAT = 2.0            # lowest allowed fat percentage
+MAX_FAT = 7.0            # highest allowed fat percentage
+
+
+def rate_per_litre(fat, snf):
+    """Return the price per litre in Rs, rounded to 2 decimals.
+
+    Parameters:
+        fat (float): fat percentage of the milk sample.
+        snf (float): solids-not-fat percentage of the sample.
+
+    Returns:
+        float: rate per litre, rounded to 2 decimal places.
+
+    Reads the named constants. Never modifies them.
+    """
+    fat_steps = round((fat - BASE_FAT) / FAT_STEP_SIZE)
+    snf_steps = round((snf - BASE_SNF) / SNF_STEP_SIZE)
+    rate = BASE_RATE + fat_steps * FAT_STEP_VALUE + snf_steps * SNF_STEP_VALUE
+    return round(rate, 2)
+
+
+def payout(litres, fat, snf):
+    """Return the amount payable in Rs for one entry, rounded to 2 decimals."""
+    return round(litres * rate_per_litre(fat, snf), 2)
+
+
+if __name__ == "__main__":
+    print("Ksheera Village Milk Co-operative - Task 3")
+    print("Named Rate Card")
+    print("-" * 52)
+    print(f"BASE_RATE      = {BASE_RATE:.2f}")
+    print(f"BASE_FAT       = {BASE_FAT}")
+    print(f"BASE_SNF       = {BASE_SNF}")
+    print(f"FAT_STEP_SIZE  = {FAT_STEP_SIZE}")
+    print(f"SNF_STEP_SIZE  = {SNF_STEP_SIZE}")
+    print(f"FAT_STEP_VALUE = {FAT_STEP_VALUE:.2f}")
+    print(f"SNF_STEP_VALUE = {SNF_STEP_VALUE:.2f}")
+    print(f"MIN_FAT        = {MIN_FAT}")
+    print(f"MAX_FAT        = {MAX_FAT}")
+
+    # Step counts are whole numbers (int), rates are fractional (float)
+    steps = round((4.2 - BASE_FAT) / FAT_STEP_SIZE)
+    print(f"\nFat steps for 4.2% = {steps}, type = {type(steps)}")
+
+    print("\nPayment table using named constants")
+    print("-" * 52)
+    for litres, fat, snf in [(10, 3.5, 8.5), (8.5, 4.2, 8.7), (12, 3.1, 8.3)]:
+        rate = rate_per_litre(fat, snf)
+        pay = payout(litres, fat, snf)
+        print(f"{litres:5} L  fat {fat}  snf {snf}  rate {rate:6.2f}  pay {pay:8.2f}")
+
+    print("\nValidation using limit constants")
+    print("-" * 52)
+    for fat in (2.0, 3.5, 7.0, 1.9, 7.1):
+        valid = MIN_FAT <= fat <= MAX_FAT
+        print(f"fat {fat:4} -> {'ACCEPT' if valid else 'REJECT'}")
+
+    print("\nDynamic typing demonstration")
+    print("-" * 52)
+    x = 10
+    print(f"x = {x!r}, type = {type(x)}")
+    x = "10"
+    print(f"x = {x!r}, type = {type(x)}")
+
+    print("\nMultiple assignment and swapping")
+    print("-" * 52)
+    a, b = 5, 8
+    print(f"Before swap: a = {a}, b = {b}")
+    a, b = b, a
+    print(f"After swap : a = {a}, b = {b}")

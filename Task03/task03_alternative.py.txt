@@ -1,0 +1,98 @@
+"""Task 3 - Alternative Concept and Complexity Analysis.
+
+Compares three ways of storing the rate card:
+1. Magic numbers inside expressions
+2. Named constants (UPPER_CASE)
+3. A dictionary RATE_CARD
+
+This file is an experiment only. The real calculator uses task03_constants.py.
+"""
+
+import sys
+import time
+
+# --- Design 1: named constants ---
+BASE_RATE = 30.00
+BASE_FAT = 3.5
+BASE_SNF = 8.5
+FAT_STEP_SIZE = 0.1
+SNF_STEP_SIZE = 0.1
+FAT_STEP_VALUE = 0.40
+SNF_STEP_VALUE = 0.30
+
+# --- Design 2: dictionary rate card ---
+RATE_CARD = {
+    "base": 30.00,
+    "base_fat": 3.5,
+    "base_snf": 8.5,
+    "fat_step_size": 0.1,
+    "snf_step_size": 0.1,
+    "fat_step_value": 0.40,
+    "snf_step_value": 0.30,
+}
+
+
+def rate_magic(fat, snf):
+    """Magic numbers typed directly inside the expression."""
+    fat_steps = round((fat - 3.5) / 0.1)
+    snf_steps = round((snf - 8.5) / 0.1)
+    return round(30.00 + fat_steps * 0.40 + snf_steps * 0.30, 2)
+
+
+def rate_named(fat, snf):
+    """Rate card stored as named constants."""
+    fat_steps = round((fat - BASE_FAT) / FAT_STEP_SIZE)
+    snf_steps = round((snf - BASE_SNF) / SNF_STEP_SIZE)
+    return round(BASE_RATE + fat_steps * FAT_STEP_VALUE
+                 + snf_steps * SNF_STEP_VALUE, 2)
+
+
+def rate_dict(fat, snf):
+    """Rate card stored in a dictionary."""
+    fat_steps = round((fat - RATE_CARD["base_fat"]) / RATE_CARD["fat_step_size"])
+    snf_steps = round((snf - RATE_CARD["base_snf"]) / RATE_CARD["snf_step_size"])
+    return round(RATE_CARD["base"] + fat_steps * RATE_CARD["fat_step_value"]
+                 + snf_steps * RATE_CARD["snf_step_value"], 2)
+
+
+def benchmark(func, iterations=200000):
+    """Measure total time and nanoseconds per call for a rate function."""
+    start = time.perf_counter()
+    for _ in range(iterations):
+        result = func(4.2, 8.7)
+    elapsed = time.perf_counter() - start
+    return elapsed, elapsed / iterations * 1e9, result
+
+
+if __name__ == "__main__":
+    print("Task 3 - Alternative Concept Comparison")
+    print("=" * 56)
+
+    print("\nCorrectness check (all designs must agree)")
+    print("-" * 56)
+    for fat, snf in [(3.5, 8.5), (4.2, 8.7), (3.1, 8.3)]:
+        print(f"fat={fat}, snf={snf} | magic={rate_magic(fat, snf):6.2f} "
+              f"| named={rate_named(fat, snf):6.2f} "
+              f"| dict={rate_dict(fat, snf):6.2f}")
+
+    assert rate_magic(4.2, 8.7) == rate_named(4.2, 8.7) == rate_dict(4.2, 8.7)
+    assert rate_magic(3.1, 8.3) == rate_named(3.1, 8.3) == rate_dict(3.1, 8.3)
+    print("\nAll assertions passed.")
+
+    print("\nMeasured speed (200000 rate calculations each)")
+    print("-" * 56)
+    for func in (rate_magic, rate_named, rate_dict):
+        total, per_call, result = benchmark(func)
+        print(f"{func.__name__:14} total = {total:.6f} s | "
+              f"{per_call:.1f} ns/call | result = {result:.2f}")
+
+    print("\nMeasured memory with sys.getsizeof()")
+    print("-" * 56)
+    print(f"one float (30.0)      : {sys.getsizeof(30.0)} bytes")
+    print(f"one int (30)          : {sys.getsizeof(30)} bytes")
+    print(f"RATE_CARD dict        : {sys.getsizeof(RATE_CARD)} bytes")
+    print(f"dict with 3 keys      : "
+          f"{sys.getsizeof({'base': 30.0, 'fat': 0.40, 'snf': 0.30})} bytes")
+
+    print("\nConclusion: identical results and O(1) access in all three.")
+    print("Named constants win on maintainability: one place to revise.")
