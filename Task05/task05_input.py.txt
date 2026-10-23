@@ -1,0 +1,116 @@
+"""Task 5 - Read Input and Convert Types.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+import time
+
+def get_float_try_except(prompt):
+    """Read a float from the user using try/except ValueError.
+    
+    This is the recommended approach because it handles all edge cases
+    including leading/trailing spaces and scientific notation automatically.
+    """
+    while True:
+        text = input(prompt)
+        try:
+            value = float(text)
+            return value
+        except ValueError:
+            print(f"  Error: '{text}' is not a valid number.")
+            print("  Please use digits and a dot (.) for decimals.")
+
+
+def get_float_string_methods(prompt):
+    """Alternative: Read a float by checking string methods first.
+    
+    This approach fails on valid Python floats like " 8.5 " or "-8.5" 
+    unless heavily modified. It is shown here for comparison.
+    """
+    while True:
+        text = input(prompt)
+        
+        # Remove commas if clerk typed "8,5" instead of "8.5"
+        cleaned_text = text.replace(",", ".")
+        
+        # Check if it's a valid number format using string methods
+        # Note: This simple check fails for negative numbers or spaces
+        if cleaned_text.replace(".", "", 1).replace("-", "", 1).isdigit():
+            return float(cleaned_text)
+        else:
+            print(f"  Error: String method rejected '{text}'.")
+            print("  Please enter a valid number without letters.")
+
+
+def get_positive_float(prompt):
+    """Read a float that must be greater than zero."""
+    while True:
+        value = get_float_try_except(prompt)
+        if value > 0:
+            return value
+        print("  Error: Value must be greater than zero.")
+
+
+def get_valid_fat(prompt):
+    """Read fat percentage between 2.0 and 7.0 inclusive."""
+    while True:
+        value = get_float_try_except(prompt)
+        if 2.0 <= value <= 7.0:
+            return value
+        print("  Error: Fat must be between 2.0% and 7.0%.")
+
+
+def main():
+    print("=" * 60)
+    print("Ksheera Village Milk Co-operative - Clerk Entry System")
+    print("=" * 60)
+    
+    # 1. Demonstrate why input() always returns a string
+    raw_input = input("\nEnter Farmer ID: ")
+    print(f"You entered: {raw_input!r}, Type: {type(raw_input)}")
+    print("(Notice that even if you type numbers, input() returns str)")
+    
+    # 2. Demonstrate what happens with "8,5" or "eight"
+    print("\n--- Testing Invalid Inputs ---")
+    test_inputs = ["8,5", "eight", " 8.5 ", "-5.0"]
+    for test in test_inputs:
+        print(f"\nTrying to convert '{test}':")
+        try:
+            val = float(test)
+            print(f"  Success: {val}")
+        except ValueError:
+            print(f"  Failed: ValueError raised. Cannot convert to float.")
+
+    # 3. Read actual clerk entries safely
+    print("\n--- Enter Valid Milk Entry ---")
+    farmer_id = input("Farmer ID: ")
+    litres = get_positive_float("Litres (>0): ")
+    fat = get_valid_fat("Fat % (2.0 to 7.0): ")
+    snf = get_float_try_except("SNF % (>0): ")
+    while snf <= 0:
+        print("  Error: SNF must be greater than 0.")
+        snf = get_float_try_except("SNF % (>0): ")
+    shift = input("Shift (Morning/Evening): ")
+
+    # 4. Calculate dummy values for formatting demonstration
+    rate = 33.40
+    amount = litres * rate
+
+    # 5. Print aligned results using f-strings with width and precision
+    print("\n" + "=" * 60)
+    print(f"{'MILK ENTRY RECEIPT':^60}")
+    print("=" * 60)
+    
+    # {value:width.precisionf}
+    # Example: {amount:8.2f} means 8 characters wide, 2 decimal places, float
+    print(f"{'Farmer ID':<15}: {farmer_id}")
+    print(f"{'Shift':<15}: {shift}")
+    print(f"{'Litres':<15}: {litres:8.2f} L")
+    print(f"{'Fat Percentage':<15}: {fat:8.2f} %")
+    print(f"{'SNF Percentage':<15}: {snf:8.2f} %")
+    print("-" * 60)
+    print(f"{'Rate per Litre':<15}: Rs {rate:7.2f}")
+    print(f"{'Total
