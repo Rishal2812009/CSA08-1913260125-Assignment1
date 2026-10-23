@@ -1,0 +1,144 @@
+"""Task 6 - Organise the Logic into Functions.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+# -----------------------------
+# Global Named Constants
+# These are read by the functions but NEVER modified inside them.
+# -----------------------------
+BASE_RATE = 30.00
+BASE_FAT = 3.5
+BASE_SNF = 8.5
+FAT_STEP_SIZE = 0.1
+SNF_STEP_SIZE = 0.1
+FAT_STEP_VALUE = 0.40
+SNF_STEP_VALUE = 0.30
+
+
+def rate_per_litre(fat_pct, snf_pct):
+    """Calculate the price per litre based on fat and SNF percentages.
+
+    Parameters:
+        fat_pct (float): The fat percentage of the milk.
+        snf_pct (float): The solids-not-fat percentage of the milk.
+
+    Returns:
+        float: The calculated rate per litre, rounded to 2 decimal places.
+        
+    Note:
+        Uses round() instead of int() or math.floor() to prevent 
+        floating-point step counting errors (e.g., 7.000000000000001).
+    """
+    # Calculate the number of 0.1% steps away from the base values
+    fat_steps = round((fat_pct - BASE_FAT) / FAT_STEP_SIZE)
+    snf_steps = round((snf_pct - BASE_SNF) / SNF_STEP_SIZE)
+    
+    # Compute the rate
+    rate = BASE_RATE + (fat_steps * FAT_STEP_VALUE) + (snf_steps * SNF_STEP_VALUE)
+    
+    # Return the value; do NOT print it here so other functions can use it
+    return round(rate, 2)
+
+
+def payout(litres, fat_pct, snf_pct):
+    """Calculate the total amount payable for a single shift entry.
+
+    Parameters:
+        litres (float): The quantity of milk supplied (must be > 0).
+        fat_pct (float): The fat percentage of the milk.
+        snf_pct (float): The solids-not-fat percentage of the milk.
+
+    Returns:
+        float: The total amount in Rs, rounded to 2 decimal places.
+    """
+    # Call the first function to get the rate
+    rate = rate_per_litre(fat_pct, snf_pct)
+    
+    # Multiply by volume and round to nearest paisa
+    amount = litres * rate
+    return round(amount, 2)
+
+
+def ten_day_total(entries_list):
+    """Sum up the payouts for a list of entries over ten days for one farmer.
+
+    Parameters:
+        entries_list (list of tuples): A list where each tuple contains 
+                                       (litres, fat_pct, snf_pct).
+
+    Returns:
+        float: The total payment for the 10-day period, rounded to 2 decimals.
+    """
+    total = 0.0
+    
+    # Iterate through all entries and accumulate the payout
+    for entry in entries_list:
+        litres = entry[0]
+        fat = entry[1]
+        snf = entry[2]
+        
+        # Add the payout of this single entry to the running total
+        total += payout(litres, fat, snf)
+        
+    return round(total, 2)
+
+
+def demonstrate_scope():
+    """Demonstrate local vs global variable scope."""
+    # Reading the global constant is perfectly fine
+    print(f"Inside function -> Reading global BASE_RATE: {BASE_RATE}")
+    
+    # Creating a local variable with the same name does NOT change the global one
+    BASE_RATE = 50.00  # This creates a NEW local variable
+    print(f"Inside function -> Local BASE_RATE changed to: {BASE_RATE}")
+
+
+if __name__ == "__main__":
+    print("Task 6 - Organising Logic into Functions")
+    print("=" * 60)
+
+    # 1. Testing rate_per_litre
+    print("\n1. Testing rate_per_litre()")
+    print("-" * 60)
+    rate1 = rate_per_litre(3.5, 8.5)  # Base values
+    rate2 = rate_per_litre(4.2, 8.7)  # Above base
+    rate3 = rate_per_litre(3.1, 8.3)  # Below base
+    print(f"Fat 3.5, SNF 8.5 -> Rate: Rs {rate1:.2f}")
+    print(f"Fat 4.2, SNF 8.7 -> Rate: Rs {rate2:.2f}")
+    print(f"Fat 3.1, SNF 8.3 -> Rate: Rs {rate3:.2f}")
+
+    # 2. Testing payout
+    print("\n2. Testing payout()")
+    print("-" * 60)
+    pay1 = payout(10, 3.5, 8.5)
+    pay2 = payout(8.5, 4.2, 8.7)
+    pay3 = payout(12, 3.1, 8.3)
+    print(f"10 L at base rates     -> Amount: Rs {pay1:.2f}")
+    print(f"8.5 L at higher rates  -> Amount: Rs {pay2:.2f}")
+    print(f"12 L at lower rates    -> Amount: Rs {pay3:.2f}")
+
+    # 3. Testing ten_day_total
+    print("\n3. Testing ten_day_total()")
+    print("-" * 60)
+    # Mock data: 3 shifts for a single farmer over 10 days
+    farmer_entries = [
+        (10, 3.5, 8.5),   # Shift 1
+        (8.5, 4.2, 8.7),  # Shift 2
+        (12, 3.1, 8.3)    # Shift 3
+    ]
+    total_payment = ten_day_total(farmer_entries)
+    print(f"Total entries processed: {len(farmer_entries)}")
+    print(f"Ten-Day Total Payment  : Rs {total_payment:.2f}")
+    print(f"(Manual check: {pay1} + {pay2} + {pay3} = {pay1+pay2+pay3})")
+
+    # 4. Demonstrating Scope
+    print("\n4. Demonstrating Local vs Global Scope")
+    print("-" * 60)
+    print(f"Before function call -> Global BASE_RATE: {BASE_RATE}")
+    demonstrate_scope()
+    print(f"After function call  -> Global BASE_RATE: {BASE_RATE}")
+    print("(Notice the global BASE_RATE remained 30.0, proving local scope)")
