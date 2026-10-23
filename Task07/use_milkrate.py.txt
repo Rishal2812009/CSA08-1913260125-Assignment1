@@ -1,0 +1,56 @@
+"""Task 7 - Use the milkrate module from a separate script.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+import time
+import sys
+
+print("Task 7 - Using milkrate from a separate script")
+print("=" * 60)
+
+# Python searches for modules using sys.path.
+# The first entry is normally the folder containing this script.
+print("sys.path[0] =", sys.path[0])
+
+# Measure the first import of milkrate.
+start = time.perf_counter()
+import milkrate
+first_import_time = time.perf_counter() - start
+
+print(f"First import time : {first_import_time:.6f} s")
+
+# Measure a cached import. Python keeps loaded modules in sys.modules.
+start = time.perf_counter()
+
+cached_import_time = time.perf_counter() - start
+
+print(f"Cached import time: {cached_import_time:.9f} s")
+
+print("milkrate.__name__ =", milkrate.__name__)
+print("Module cached in sys.modules:", "milkrate" in sys.modules)
+
+# Import style 1: import milkrate
+print("\nStyle 1: import milkrate")
+pay1 = milkrate.payout(10, 3.5, 8.5)
+print(f"milkrate.payout(10, 3.5, 8.5) = {pay1:.2f}")
+
+# Import style 2: from milkrate import payout
+from milkrate import payout
+
+print("\nStyle 2: from milkrate import payout")
+pay2 = payout(8.5, 4.2, 8.7)
+print(f"payout(8.5, 4.2, 8.7) = {pay2:.2f}")
+
+# Import style 3: import milkrate as mr
+import milkrate as mr
+
+print("\nStyle 3: import milkrate as mr")
+pay3 = mr.payout(12, 3.1, 8.3)
+print(f"mr.payout(12, 3.1, 8.3) = {pay3:.2f}")
+
+print("\nNo rate table was printed during import because")
+print("milkrate.__name__ is 'milkrate', not '__main__'.")
