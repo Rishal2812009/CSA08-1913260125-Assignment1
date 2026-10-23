@@ -1,0 +1,185 @@
+"""Task 4 - Write Correct Expressions.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+import math
+import time
+
+# -----------------------------
+# Rate card constants
+# -----------------------------
+BASE_RATE = 30.00
+BASE_FAT = 3.5
+BASE_SNF = 8.5
+
+STEP_SIZE = 0.1
+
+FAT_STEP_VALUE = 0.40
+SNF_STEP_VALUE = 0.30
+
+MIN_FAT = 2.0
+MAX_FAT = 7.0
+
+
+def fat_steps_round(fat):
+    """Return the number of fat steps using round()."""
+    return round((fat - BASE_FAT) / STEP_SIZE)
+
+
+def snf_steps_round(snf):
+    """Return the number of SNF steps using round()."""
+    return round((snf - BASE_SNF) / STEP_SIZE)
+
+
+def rate_per_litre(fat, snf):
+    """Return the correct rate per litre, rounded to 2 decimals."""
+    rate = (BASE_RATE
+            + fat_steps_round(fat) * FAT_STEP_VALUE
+            + snf_steps_round(snf) * SNF_STEP_VALUE)
+    return round(rate, 2)
+
+
+def payout(litres, fat, snf):
+    """Return the amount payable for one entry, rounded to 2 decimals."""
+    return round(litres * rate_per_litre(fat, snf), 2)
+
+
+def rate_with_method(fat, method):
+    """Return raw steps, chosen steps and rate for round/int/floor.
+
+    SNF is assumed to be the base value 8.5 so that only the fat-step
+    difference is visible.
+    """
+    raw = (fat - BASE_FAT) / STEP_SIZE
+
+    if method == "round":
+        steps = round(raw)
+    elif method == "int":
+        steps = int(raw)
+    elif method == "floor":
+        steps = math.floor(raw)
+    else:
+        raise ValueError("Unknown method")
+
+    rate = BASE_RATE + steps * FAT_STEP_VALUE
+    return raw, steps, round(rate, 2)
+
+
+def rate_round_only(fat):
+    """Rate using round() for step count."""
+    steps = round((fat - BASE_FAT) / STEP_SIZE)
+    return round(BASE_RATE + steps * FAT_STEP_VALUE, 2)
+
+
+def rate_int_only(fat):
+    """Rate using int() truncation for step count."""
+    steps = int((fat - BASE_FAT) / STEP_SIZE)
+    return round(BASE_RATE + steps * FAT_STEP_VALUE, 2)
+
+
+def rate_floor_only(fat):
+    """Rate using math.floor() for step count."""
+    steps = math.floor((fat - BASE_FAT) / STEP_SIZE)
+    return round(BASE_RATE + steps * FAT_STEP_VALUE, 2)
+
+
+def benchmark(func, iterations=200_000):
+    """Measure total time and nanoseconds per call."""
+    start = time.perf_counter()
+    for _ in range(iterations):
+        func(4.2)
+    elapsed = time.perf_counter() - start
+    return elapsed, elapsed / iterations * 1e9
+
+
+if __name__ == "__main__":
+    print("Task 4 - Correct Expressions")
+    print("=" * 72)
+
+    # Correct expressions for one entry
+    litres, fat, snf = 8.5, 4.2, 8.7
+
+    raw_fat_steps = (fat - BASE_FAT) / STEP_SIZE
+    raw_snf_steps = (snf - BASE_SNF) / STEP_SIZE
+
+    fat_steps = round(raw_fat_steps)
+    snf_steps = round(raw_snf_steps)
+
+    rate = rate_per_litre(fat, snf)
+    amount = payout(litres, fat, snf)
+
+    print("\nCorrect expressions for one entry")
+    print("-" * 72)
+    print(f"litres          = {litres}")
+    print(f"fat             = {fat}")
+    print(f"snf             = {snf}")
+    print(f"raw fat steps   = {raw_fat_steps!r}")
+    print(f"raw snf steps   = {raw_snf_steps!r}")
+    print(f"fat steps       = {fat_steps}")
+    print(f"snf steps       = {snf_steps}")
+    print(f"rate per litre  = {rate:.2f}")
+    print(f"amount          = {amount:.2f}")
+
+    # Payment table using correct expressions
+    print("\nPayment table using round() step counts")
+    print("-" * 72)
+    entries = [(10, 3.5, 8.5), (8.5, 4.2, 8.7), (12, 3.1, 8.3)]
+
+    for litres, fat, snf in entries:
+        rate = rate_per_litre(fat, snf)
+        pay = payout(litres, fat, snf)
+        print(f"{litres:5} L  fat {fat}  snf {snf}  rate {rate:6.2f}  pay {pay:8.2f}")
+
+    # At least three unexpected expressions
+    print("\nAt least three unexpected expressions")
+    print("-" * 72)
+
+    surprise1 = (4.2 - 3.5) / 0.1
+    print(f"1. (4.2 - 3.5) / 0.1          = {surprise1!r}")
+    print(f"   round(...)                 = {round(surprise1)}")
+
+    print(f"2. -2 ** 2                    = {-2 ** 2}")
+    print(f"   (-2) ** 2                  = {(-2) ** 2}")
+    print(f"   2 ** 3 ** 2                = {2 ** 3 ** 2}")
+
+    negative = -3.999999999999999
+    print(f"3. int({negative!r})        = {int(negative)}")
+    print(f"   round({negative!r})     = {round(negative)}")
+    print(f"   math.floor({negative!r}) = {math.floor(negative)}")
+    print(f"   round(2.5), round(3.5)     = {round(2.5)}, {round(3.5)}")
+
+    # Comparison chaining and Boolean operators
+    print("\nComparison chaining and Boolean operators")
+    print("-" * 72)
+
+    for fat in (1.9, 2.0, 4.2, 7.0, 7.1):
+        valid = MIN_FAT <= fat <= MAX_FAT
+        print(f"fat {fat:4} -> {valid}")
+
+    litres, fat, snf = 8.5, 4.2, 8.7
+    valid_entry = (litres > 0) and (MIN_FAT <= fat <= MAX_FAT) and (snf > 0)
+    print(f"\nEntry litres={litres}, fat={fat}, snf={snf} valid? {valid_entry}")
+
+    # Alternative concept: int() or math.floor() instead of round()
+    print("\nAlternative: int() or math.floor() instead of round()")
+    print("SNF is kept at the base value 8.5 to isolate the fat-step effect.")
+    print("-" * 72)
+
+    for fat in (4.2, 3.1):
+        print(f"fat = {fat}")
+        for method in ("round", "int", "floor"):
+            raw, steps, rate = rate_with_method(fat, method)
+            print(f"  {method:6} raw={raw!r:24} steps={steps:3} rate={rate:6.2f}")
+        print()
+
+    # Measured speed
+    print("Measured speed for step-count methods")
+    print("-" * 72)
+
+    for func in (rate_round_only, rate_int_only, rate_floor_only):
+        total, per_call = benchmark(func)
+        print(f"{func.__name__:18} total={total:.6f}s  per call={per_call:.1f} ns")
