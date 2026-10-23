@@ -1,0 +1,72 @@
+# Task 8 - Algorithmic Problem Solving
+
+## 1. Steps of Algorithmic Problem Solving
+
+1. **Understand**: Identify inputs (litres, fat, snf), outputs (rate, amount, ten-day total), constraints (fat between 2.0 and 7.0, litres > 0), and the rate card constants.
+2. **Plan**: Break the problem into smaller logical steps. First validate the input, then calculate step adjustments, compute the rate, multiply by volume, and accumulate the total.
+3. **Write**: Translate the planned steps into SIMATS standard pseudocode before writing actual Python code.
+4. **Test**: Perform a manual "hand trace" with sample data (normal, boundary, and invalid cases) to ensure the logic produces the expected output before coding.
+
+---
+
+## 2. Pseudocode (SIMATS Engineering Standard)
+
+The following pseudocode uses standard keywords (BEGIN, END, READ, PRINT, COMPUTE, IF-THEN-ELSE, WHILE, FOR) aligned with SIMATS Engineering guidelines.
+
+```text
+ALGORITHM Compute_Ten_Day_Payment
+BEGIN
+    // Define Constants
+    CONSTANT BASE_RATE = 30.00
+    CONSTANT BASE_FAT = 3.5
+    CONSTANT BASE_SNF = 8.5
+    CONSTANT FAT_STEP_VALUE = 0.40
+    CONSTANT SNF_STEP_VALUE = 0.30
+    CONSTANT STEP_SIZE = 0.1
+    CONSTANT MIN_FAT = 2.0
+    CONSTANT MAX_FAT = 7.0
+
+    COMPUTE ten_day_total = 0.0
+    COMPUTE entry_count = 0
+
+    PRINT "Enter number of entries for the farmer:"
+    READ n
+
+    FOR i = 1 TO n DO
+        PRINT "Enter litres, fat_pct, snf_pct:"
+        READ litres, fat_pct, snf_pct
+
+        // Validate Entry
+        IF litres <= 0 THEN
+            PRINT "Error: Litres must be positive."
+        ELSE IF fat_pct < MIN_FAT OR fat_pct > MAX_FAT THEN
+            PRINT "Error: Fat percentage out of allowed range."
+        ELSE IF snf_pct <= 0 THEN
+            PRINT "Error: SNF must be positive."
+        ELSE
+            // Calculate Steps
+            COMPUTE raw_fat_steps = (fat_pct - BASE_FAT) / STEP_SIZE
+            COMPUTE fat_steps = ROUND(raw_fat_steps)
+
+            COMPUTE raw_snf_steps = (snf_pct - BASE_SNF) / STEP_SIZE
+            COMPUTE snf_steps = ROUND(raw_snf_steps)
+
+            // Calculate Rate and Amount
+            COMPUTE rate = BASE_RATE + (fat_steps * FAT_STEP_VALUE) + (snf_steps * SNF_STEP_VALUE)
+            COMPUTE rate = ROUND(rate, 2)
+
+            COMPUTE amount = litres * rate
+            COMPUTE amount = ROUND(amount, 2)
+
+            // Accumulate Total
+            COMPUTE ten_day_total = ten_day_total + amount
+            COMPUTE entry_count = entry_count + 1
+
+            PRINT "Entry valid. Amount for this shift: ", amount
+        END IF
+    END FOR
+
+    COMPUTE ten_day_total = ROUND(ten_day_total, 2)
+    PRINT "Total valid entries processed: ", entry_count
+    PRINT "Ten-Day Total Payment: Rs ", ten_day_total
+END
