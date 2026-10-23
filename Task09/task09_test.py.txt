@@ -1,0 +1,138 @@
+"""Task 9 - Automated Testing and Hand Calculation Verification.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+import milkrate
+import sys
+
+def test_normal_entries():
+    """Test normal entries in each direction (above and below standard)."""
+    print("Testing Normal Entries...")
+    
+    # Standard base values
+    assert milkrate.rate_per_litre(3.5, 8.5) == 30.00
+    assert milkrate.payout(10, 3.5, 8.5) == 300.00
+    
+    # Above standard (fat=4.2 -> +7 steps, snf=8.7 -> +2 steps)
+    # Rate = 30.00 + (7*0.40) + (2*0.30) = 30.00 + 2.80 + 0.60 = 33.40
+    assert milkrate.rate_per_litre(4.2, 8.7) == 33.40
+    # Payout = 8.5 * 33.40 = 283.90
+    assert milkrate.payout(8.5, 4.2, 8.7) == 283.90
+    
+    # Below standard (fat=3.1 -> -4 steps, snf=8.3 -> -2 steps)
+    # Rate = 30.00 + (-4*0.40) + (-2*0.30) = 30.00 - 1.60 - 0.60 = 27.80
+    assert milkrate.rate_per_litre(3.1, 8.3) == 27.80
+    # Payout = 12 * 27.80 = 333.60
+    assert milkrate.payout(12, 3.1, 8.3) == 333.60
+    
+    print("  [PASS] All normal entries calculated correctly.")
+
+
+def test_boundary_entries():
+    """Test exact boundaries: base values, lowest allowed fat, highest allowed fat."""
+    print("Testing Boundary Entries...")
+    
+    # Exactly 3.5% fat and 8.5% SNF
+    assert milkrate.rate_per_litre(3.5, 8.5) == 30.00
+    
+    # Lowest allowed fat (2.0%)
+    # Steps = (2.0 - 3.5) / 0.1 = -15 steps
+    # Rate = 30.00 + (-15 * 0.40) = 30.00 - 6.00 = 24.00
+    assert milkrate.rate_per_litre(2.0, 8.5) == 24.00
+    
+    # Highest allowed fat (7.0%)
+    # Steps = (7.0 - 3.5) / 0.1 = 35 steps
+    # Rate = 30.00 + (35 * 0.40) = 30.00 + 14.00 = 44.00
+    assert milkrate.rate_per_litre(7.0, 8.5) == 44.00
+    
+    print("  [PASS] All boundary entries calculated correctly.")
+
+
+def test_invalid_entries_logic():
+    """Test how the logic handles invalid entries conceptually."""
+    print("Testing Invalid Entries Logic...")
+    
+    # Note: The milkrate module functions assume valid inputs. 
+    # Validation happens at the input stage (as shown in task09_calculator.py).
+    # Here we test what happens mathematically if bad data slips through.
+    
+    # Negative quantity: Math works, but logically invalid
+    negative_pay = milkrate.payout(-5, 3.5, 8.5)
+    assert negative_pay == -150.00, "Negative litres produce negative pay (must be blocked by input validation)"
+    
+    # Fat outside range (e.g., 8.0%): Math works, but logically invalid
+    out_of_range_rate = milkrate.rate_per_litre(8.0, 8.5)
+    # Steps = (8.0 - 3.5)/0.1 = 45. Rate = 30 + 45*0.40 = 48.00
+    assert out_of_range_rate == 48.00, "Out of range fat calculates mathematically (must be blocked by input validation)"
+    
+    # Text input: Will raise TypeError or ValueError if passed directly
+    try:
+        milkrate.rate_per_litre("eight", 8.5)
+        assert False, "Should have raised an error for string input"
+    except (TypeError, ValueError):
+        pass # Expected behavior
+        
+    print("  [PASS] Invalid entry handling verified.")
+
+
+def test_five_entries_hand_calculation():
+    """Verify a set of 5 entries whose total was calculated by hand."""
+    print("Testing 5-Entry Hand Calculation...")
+    
+    # Entry 1: 10 L, 3.5 fat, 8.5 snf -> Base -> Rate 30.00 -> Pay 300.00
+    e1 = milkrate.payout(10, 3.5, 8.5)
+    
+    # Entry 2: 15 L, 4.0 fat, 8.5 snf -> Fat +5 steps (+2.00) -> Rate 32.00 -> Pay 480.00
+    e2 = milkrate.payout(15, 4.0, 8.5)
+    
+    # Entry 3: 8 L, 3.5 fat, 9.0 snf -> SNF +5 steps (+1.50) -> Rate 31.50 -> Pay 252.00
+    e3 = milkrate.payout(8, 3.5, 9.0)
+    
+    # Entry 4: 12 L, 3.0 fat, 8.5 snf -> Fat -5 steps (-2.00) -> Rate 28.00 -> Pay 336.00
+    e4 = milkrate.payout(12, 3.0, 8.5)
+    
+    # Entry 5: 5 L, 4.5 fat, 8.0 snf -> Fat +10 steps (+4.00), SNF -5 steps (-1.50) -> Rate 32.50 -> Pay 162.50
+    e5 = milkrate.payout(5, 4.5, 8.0)
+    
+    entries = [e1, e2, e3, e4, e5]
+    
+    # Hand Calculation Total:
+    # 300.00 + 480.00 + 252.00 + 336.00 + 162.50 = 1530.50
+    expected_total = 1530.50
+    
+    actual_total = round(sum(entries), 2)
+    
+    print(f"  Entry 1: {e1:.2f}")
+    print(f"  Entry 2: {e2:.2f}")
+    print(f"  Entry 3: {e3:.2f}")
+    print(f"  Entry 4: {e4:.2f}")
+    print(f"  Entry 5: {e5:.2f}")
+    print(f"  Expected Total (Hand): {expected_total:.2f}")
+    print(f"  Actual Total (Code)  : {actual_total:.2f}")
+    
+    assert actual_total == expected_total, f"Mismatch! Expected {expected_total}, got {actual_total}"
+    print("  [PASS] 5-Entry hand calculation matches code execution perfectly.")
+
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("TASK 9 - AUTOMATED TEST SUITE")
+    print("=" * 60)
+    
+    try:
+        test_normal_entries()
+        test_boundary_entries()
+        test_invalid_entries_logic()
+        test_five_entries_hand_calculation()
+        
+        print("\n" + "=" * 60)
+        print("ALL TESTS PASSED SUCCESSFULLY!")
+        print("=" * 60)
+        
+    except AssertionError as e:
+        print(f"\n[FAIL] Test failed: {e}")
+        sys.exit(1)

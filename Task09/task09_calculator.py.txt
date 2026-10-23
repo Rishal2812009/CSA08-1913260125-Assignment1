@@ -1,0 +1,95 @@
+"""Task 9 - Complete Payment Calculator Implementation.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+import milkrate
+
+def get_positive_float(prompt):
+    """Reads a float > 0 safely."""
+    while True:
+        text = input(prompt)
+        try:
+            value = float(text)
+            if value > 0:
+                return value
+            print("  Error: Value must be greater than zero.")
+        except ValueError:
+            print(f"  Error: '{text}' is not a valid number.")
+
+def get_valid_fat(prompt):
+    """Reads fat percentage between 2.0 and 7.0 safely."""
+    while True:
+        text = input(prompt)
+        try:
+            value = float(text)
+            if 2.0 <= value <= 7.0:
+                return value
+            print("  Error: Fat must be between 2.0% and 7.0%.")
+        except ValueError:
+            print(f"  Error: '{text}' is not a valid number.")
+
+def get_valid_snf(prompt):
+    """Reads SNF percentage > 0 safely."""
+    while True:
+        text = input(prompt)
+        try:
+            value = float(text)
+            if value > 0:
+                return value
+            print("  Error: SNF must be greater than zero.")
+        except ValueError:
+            print(f"  Error: '{text}' is not a valid number.")
+
+def main():
+    print("=" * 60)
+    print("Ksheera Village Milk Co-operative - Payment Calculator")
+    print("=" * 60)
+    
+    farmer_id = input("Enter Farmer ID: ")
+    
+    entries = []
+    
+    while True:
+        print("\n--- New Entry (or type 'done' to finish) ---")
+        choice = input("Press Enter to add entry, or type 'done': ").strip().lower()
+        if choice == 'done':
+            break
+            
+        litres = get_positive_float("Litres (>0): ")
+        fat = get_valid_fat("Fat % (2.0 to 7.0): ")
+        snf = get_valid_snf("SNF % (>0): ")
+        shift = input("Shift (Morning/Evening): ")
+        
+        rate = milkrate.rate_per_litre(fat, snf)
+        amount = milkrate.payout(litres, fat, snf)
+        
+        entries.append((litres, fat, snf, shift, rate, amount))
+        print(f"Entry added. Amount for this shift: Rs {amount:.2f}")
+
+    # Calculate ten day total
+    total_payment = sum(entry[5] for entry in entries)
+    total_payment = round(total_payment, 2)
+
+    # Print Receipt
+    print("\n" + "=" * 60)
+    print(f"{'TEN-DAY PAYMENT RECEIPT':^60}")
+    print("=" * 60)
+    print(f"Farmer ID: {farmer_id}")
+    print(f"Total Entries: {len(entries)}")
+    print("-" * 60)
+    print(f"{'Shift':<10} {'Litres':>8} {'Fat':>6} {'SNF':>6} {'Rate':>8} {'Amount':>10}")
+    print("-" * 60)
+    
+    for i, (litres, fat, snf, shift, rate, amount) in enumerate(entries, 1):
+        print(f"{shift:<10} {litres:8.2f} {fat:6.2f} {snf:6.2f} {rate:8.2f} {amount:10.2f}")
+        
+    print("-" * 60)
+    print(f"{'TOTAL PAYMENT':<40} Rs {total_payment:9.2f}")
+    print("=" * 60)
+
+if __name__ == "__main__":
+    main()
