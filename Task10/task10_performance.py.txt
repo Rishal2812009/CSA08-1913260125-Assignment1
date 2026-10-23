@@ -1,0 +1,185 @@
+"""Task 10 - Compare Expectations with Execution & Alternative Concept.
+
+Student: Rishal V Singh
+Register Number: 1913260125
+Branch: B.Tech EEE
+Course: CSA08 - Assignment 1
+"""
+
+import time
+from decimal import Decimal, ROUND_HALF_UP
+import sys
+
+# -----------------------------
+# Constants
+# -----------------------------
+BASE_RATE = 30.00
+BASE_FAT = 3.5
+BASE_SNF = 8.5
+STEP_SIZE = 0.1
+FAT_STEP_VALUE = 0.40
+SNF_STEP_VALUE = 0.30
+
+D_BASE_RATE = Decimal("30.00")
+D_BASE_FAT = Decimal("3.5")
+D_BASE_SNF = Decimal("8.5")
+D_STEP_SIZE = Decimal("0.1")
+D_FAT_STEP = Decimal("0.40")
+D_SNF_STEP = Decimal("0.30")
+
+
+# -----------------------------
+# Core Calculation Functions
+# -----------------------------
+def calc_rate_float(fat, snf):
+    fat_steps = round((fat - BASE_FAT) / STEP_SIZE)
+    snf_steps = round((snf - BASE_SNF) / STEP_SIZE)
+    return BASE_RATE + (fat_steps * FAT_STEP_VALUE) + (snf_steps * SNF_STEP_VALUE)
+
+def calc_rate_decimal(fat_str, snf_str):
+    fat = Decimal(fat_str)
+    snf = Decimal(snf_str)
+    fat_steps = int(((fat - D_BASE_FAT) / D_STEP_SIZE).to_integral_value(rounding=ROUND_HALF_UP))
+    snf_steps = int(((snf - D_BASE_SNF) / D_STEP_SIZE).to_integral_value(rounding=ROUND_HALF_UP))
+    rate = D_BASE_RATE + (fat_steps * D_FAT_STEP) + (snf_steps * D_SNF_STEP)
+    return rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+
+# -----------------------------
+# Data Generation (Fixed for reproducibility)
+# -----------------------------
+def generate_entries(n):
+    """Generate n entries cycling through 3 standard profiles."""
+    profiles = [
+        (10.0, "3.5", 8.5, "8.5"),   # Base
+        (8.5, "4.2", 8.7, "8.7"),     # Above base
+        (12.0, "3.1", 8.3, "8.3")     # Below base
+    ]
+    float_entries = []
+    dec_entries = []
+    for i in range(n):
+        p = profiles[i % 3]
+        float_entries.append((p[0], p[2]))      # (litres_float, snf_float)
+        dec_entries.append((str(p[0]), p[1], p[3])) # (litres_str, fat_str, snf_str)
+    
+    # Store fat/snf for float separately to keep tuple clean
+    float_fat_snf = [(profiles[i % 3][2], profiles[i % 3][3]) for i in range(n)]
+    # Wait, simpler approach:
+    f_data = []
+    d_data = []
+    for i in range(n):
+        p = profiles[i % 3]
+        f_data.append((p[0], p[2], p[3]))       # litres, fat, snf as floats
+        d_data.append((str(p[0]), p[1], p[3]))  # litres, fat, snf as strings for Decimal
+        
+    return f_data, d_data
+
+
+# -----------------------------
+# 1. Float vs Decimal Totals & Timing
+# -----------------------------
+def compare_float_vs_decimal():
+    print("=" * 70)
+    print("PART 1: FLOAT VS DECIMAL TOTALS AND EXECUTION TIME")
+    print("=" * 70)
+    
+    sizes = [300, 6000, 150000]
+    
+    for n in sizes:
+        f_data, d_data = generate_entries(n)
+        
+        # --- FLOAT CALCULATION ---
+        start = time.perf_counter()
+        float_total = 0.0
+        for litres, fat, snf in f_data:
+            rate = calc_rate_float(fat, snf)
+            amount = litres * rate
+            float_total += amount
+        float_time = time.perf_counter() - start
+        
+        # --- DECIMAL CALCULATION ---
+        start = time.perf_counter()
+        dec_total = Decimal("0.00")
+        for litres_s, fat_s, snf_s in d_data:
+            rate = calc_rate_decimal(fat_s, snf_s)
+            amount = (Decimal(litres_s) * rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            dec_total += amount
+        dec_time = time.perf_counter() - start
+        
+        diff = abs(float_total - float(dec_total))
+        
+        print(f"\nEntries: {n:,}")
+        print("-" * 50)
+        print(f"Float Total   : Rs {float_total:.10f} | Time: {float_time:.6f} s")
+        print(f"Decimal Total : Rs {dec_total}          | Time: {dec_time:.6f} s")
+        print(f"Difference    : Rs {diff:.10f}")
+        if diff > 0.001:
+            print("WARNING: Float total differs from exact bank total!")
+
+
+# -----------------------------
+# 2. Rounding Each Payment vs Rounding Only the Total
+# -----------------------------
+def compare_rounding_methods():
+    print("\n" + "=" * 70)
+    print("PART 2: ROUNDING EACH PAYMENT VS ROUNDING ONLY THE FINAL TOTAL")
+    print("=" * 70)
+    
+    n = 150000
+    f_data, _ = generate_entries(n)
+    
+    # Method A: Round each individual payment to 2 decimals before adding
+    start = time.perf_counter()
+    total_round_each = 0.0
+    for litres, fat, snf in f_data:
+        rate = calc_rate_float(fat, snf)
+        amount = round(litres * rate, 2)
+        total_round_each += amount
+    total_round_each = round(total_round_each, 2)
+    time_a = time.perf_counter() - start
+    
+    # Method B: Keep full float precision, round ONLY at the very end
+    start = time.perf_counter()
+    total_round_end = 0.0
+    for litres, fat, snf in f_data:
+        rate = calc_rate_float(fat, snf)
+        amount = litres * rate  # No rounding here
+        total_round_end += amount
+    total_round_end = round(total_round_end, 2)
+    time_b = time.perf_counter() - start
+    
+    # Exact Decimal Total for reference
+    _, d_data = generate_entries(n)
+    exact_dec = Decimal("0.00")
+    for litres_s, fat_s, snf_s in d_data:
+        rate = calc_rate_decimal(fat_s, snf_s)
+        amount = (Decimal(litres_s) * rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        exact_dec += amount
+
+    print(f"\nTotal Entries: {n:,}")
+    print("-" * 50)
+    print(f"Exact Decimal Total     : Rs {exact_dec}")
+    print(f"Round EACH payment Total: Rs {total_round_each:.2f} (Time: {time_a:.6f}s)")
+    print(f"Round END only Total    : Rs {total_round_end:.2f} (Time: {time_b:.6f}s)")
+    
+    diff_each = abs(total_round_each - float(exact_dec))
+    diff_end = abs(total_round_end - float(exact_dec))
+    
+    print(f"\nError (Round Each) vs Exact: Rs {diff_each:.10f}")
+    print(f"Error (Round End)  vs Exact: Rs {diff_end:.10f}")
+    print("\nConclusion: Banks pay per-transaction. Therefore, you MUST round each")
+    print("payment individually. Rounding only at the end accumulates hidden fractions.")
+
+
+# -----------------------------
+# 3. ALTERNATIVE CONCEPT: Dictionary Rate Table (Cache)
+# -----------------------------
+def alternative_dictionary_cache():
+    print("\n" + "=" * 70)
+    print("PART 3: ALTERNATIVE CONCEPT - DICTIONARY RATE TABLE CACHE")
+    print("=" * 70)
+    
+    # Pre-compute all possible rates and store them in a dictionary
+    # Fat ranges from 2.0 to 7.0 in steps of 0.1 -> ~51 values
+    # SNF ranges typically from 7.0 to 10.0 in steps of 0.1 -> ~31 values
+    # Total combinations k = 51 * 31 = 1581
